@@ -1,0 +1,26 @@
+<table class="table table-striped">
+<thead>
+    <tr>
+        <th width="23%">Key</th>
+        <th width="32%">Secret</th>
+        <th width='27%'>创建时间</th>
+        <th>操作</th>
+    </tr>
+</thead>
+<tbody>
+<{foreach $certs as $cert}>
+<tr <{if $cert.status eq "block"}>class="error"<{/if}>>
+    <td><{$cert.key}></td>
+    <td><{$cert.secret}></td>
+    <td><{$cert.join_time|date_format:'Y/m/d H:i:s'}></td>
+    <td>
+        <a href="?action=edit&key=<{$cert.key}>" class="btn btn-mini">编辑</a>
+        <a href="?action=delete&key=<{$cert.key}>" class="btn btn-mini">删除</a>
+        <{if $cert.status eq "block"}><a href="?action=alive&key=<{$cert.key}>" class="btn btn-mini">激活</a>
+        <{elseif $cert.status eq "active"}><a href="?action=block&key=<{$cert.key}>" class="btn btn-mini">停用</a><{/if}>
+    </td>
+</tr>
+<{/foreach}>
+</tbody>
+</table>
+<a href="?action=new" class="btn"><i class="icon-plus"></i> 生成新证书</a>

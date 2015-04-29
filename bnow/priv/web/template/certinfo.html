@@ -1,0 +1,46 @@
+<form class="raw" method="post">
+    <div class="span5 form-horizontal">
+        <{if $smarty.get.action eq "edit"}>
+        <div class="control-group">
+            <label class="control-label" for="inputKey">Key</label>
+            <div class="controls">
+                <h4 style="margin:5px 0;line-height:20px;padding:0"><{$cert.key}></h4>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputSecret">Secret</label>
+            <div class="controls">
+                <h4 style="margin:5px 0;line-height:20px;padding:0"><{$cert.secret}></h4>
+            </div>
+        </div>
+        <{/if}>
+        <{if $action neq 'profile'}>
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox">
+                    <input name="status" value="active" 
+                    <{if ($smarty.get.action eq "new") or $cert.status eq "active"}>
+                    checked="checked" 
+                    <{/if}>
+                    type="checkbox">启用证书
+                </label>
+            </div>
+        </div>
+        <{/if}>
+    </div>
+
+    <div style="clear:both;margin:20px 0" class="form-horizontal">
+        <div class="control-group">
+            <div class="controls">
+                <input type="hidden" name="save" value="true" />
+                <{if $smarty.get.action eq "edit"}>
+                <button type="submit" class="btn btn-primary">保存修改</button>
+                <a href="?action=delete&key=<{$smarty.get.key}>" class="btn btn-danger offset1">删除<{$smarty.get.user}></a>
+                <{else}>
+                <button type="submit" class="btn btn-primary">生成证书</button>
+                <{/if}>
+            </div>
+        </div>
+    </div>
+
+</form>

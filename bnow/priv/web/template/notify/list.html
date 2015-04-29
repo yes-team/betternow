@@ -1,0 +1,102 @@
+<div class="row">
+<{include file='notify/menu.html'}>
+<div class="span10" >
+<h3>通知列表</h3>
+<form class="form-actions">
+    <div class="row">
+        <div class="span3 tab-content" id="errtype-box">
+            <div class="span2" id="v_slow">
+                <label for="slowtypes">callback_id</label>
+                <Input type="text" name="callback_id" value="<{$smarty.get.callback_id}>" />
+            </div>
+        </div>
+
+        <div class="span2">
+            <label>&nbsp;</label>
+            <input type="submit" class="btn" value="更新" />
+        </div>
+    </div>
+</form>
+
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th width="200px">key</th>
+            <th width="150px">interval</th>
+            <th width="250px">filter</th>
+            <th width="150px">token_id</th>
+            <th width="200px">callback_id</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <{foreach $list as $item}>
+        <tr>
+            <td>
+                <{$item.key}>
+            </td>
+            <td>
+                <{$item.time}> min
+            </td>
+            <td>
+                <{foreach $item.filter as $key => $val}>
+                <{$key}>  : <{$val}> <br />
+                <{/foreach}>
+            </td>
+            <td>
+                <{$item.token}>
+            </td>
+            <td> <{$item.callback_id}> </td>
+            <td>
+                <div class="modal" style="display:none" id="detail_<{$item@iteration}>" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <{$error_span}> <{$item['@time']|date_format:'Y/m/d H:i:s'}>
+                        <{if $strace && $item['header-x-strace-id']}>
+                        <a style="margin-left:20px" class="btn btn-mini btn-danger" target="_blank" href="<{$strace}><{$item['header-x-strace-id']}>">session-trace</a>
+                        <{/if}>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-condensed">
+                            <{foreach $item as $k=>$v}>
+                            <tr>
+                                <td width="30%"><{$k}></td>
+                                <td>
+                                    <{if is_array($v)}>
+                                    <{foreach $v as $k1 => $v1}>
+                                    <{if !empty($v1)}>
+                                    <{$k1}>:&nbsp;<{$v1}> <br />
+                                    <{/if}>
+                                    <{/foreach}>
+                                    <{else}> 
+                                        <{$v}>
+                                    <{/if}>
+                                </td>
+                            </tr>
+                            <{/foreach}>
+                        </table>
+                    </div>
+                </div>
+                <button class="btn" onclick="$('#detail_<{$item@iteration}>').modal([])"><i class="icon-list"></i></button>
+                <button type="button" class="close" onclick="location.href='/notify.php?action=del_rule&key=<{$item.key}>&token_id=<{$item.token}>'">x</button>
+            </td>
+        </tr>
+        <{/foreach}>
+    </tbody>
+</table>
+
+<ul class="pager">
+    <{if $smarty.get.pos>=10}>
+    <li><a href="?<{$querys}>&pos=<{$smarty.get.pos-10}>">上一页</a></li>
+    <{/if}>
+    <{if count($list)==10}>
+    <li><a href="?<{$querys}>&pos=<{$smarty.get.pos+10}>">下一页</a></li>
+    <{/if}>
+</ul>
+
+<a href="/notify.php?action=rule">添加新通知</a>
+
+</div>
+

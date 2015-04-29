@@ -1,0 +1,58 @@
+include ../support/include.mk
+REBAR := ./rebar
+BNOW_VSN := `date +%%Y%%m%%d%%H%%M`
+
+RECORDS_PHP = priv/web/lib/records.php
+
+
+.PHONY: all deps doc test clean release start self
+
+all:
+	$(REBAR) skip_deps=true compile	
+
+all_withdeps: deps ${RECORDS_PHP} version
+	$(REBAR) compile
+
+self:
+	$(REBAR) compile skip-deps=true
+
+deps:
+	$(REBAR) get-deps
+	
+${RECORDS_PHP}: include/defined.hrl
+	php ../support/gen_records.php $< > $@
+	
+doc:
+	$(REBAR) doc skip_deps=true
+
+test:
+	$(REBAR) eunit skip_deps=true
+
+clean:
+	$(REBAR) clean
+
+dialyzer: all test
+	dialyzer --src src/*.erl deps/*/src/*.erl
+
+release: all
+	$(REBAR) generate
+
+version:
+	@echo "-define(bnow_vsn, \"${BNOW_VSN}\")." | tee include/vsn.hrl
+	
+install:
+	$(INSTALL) -d ${DESTDIR}/usr/local/ ${DESTDIR}${exec_prefix}/bin
+	cp -r rel/bnow ${DESTDIR}/usr/local/
+	$(INSTALL) bnowd ${DESTDIR}${exec_prefix}/bin	
+start: all
+	exec erl -pa ebin deps/*/ebin -boot start_sasl \
+		-name "bnow@127.0.0.1" \
+		-config rel/files/app.config \
+		-s bnow \
+		-mnesia dir "\"data/mnesia\"" 
+		-os_mon start_cpu_sup true \
+		-os_mon start_disksup false \
+		-os_mon start_memsup false \
+		-env ERL_CRASH_DUMP "log/erlang_crash_$$.dump" \
+		+K true \
+		+P 65536

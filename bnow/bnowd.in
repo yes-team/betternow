@@ -1,0 +1,8 @@
+#!/bin/sh
+
+prefix=@prefix@
+bnow_prefix=@exec_prefix@
+libexecdir=@libexecdir@
+
+
+exec @prefix@/bnow/bin/bnow $@

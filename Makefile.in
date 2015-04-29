@@ -1,0 +1,8 @@
+all:
+	$(MAKE) -C bnow all_withdeps
+
+start: all
+	./start.sh
+
+%::
+	$(MAKE) -C bnow $@

@@ -1,0 +1,25 @@
+<table class="table table-striped">
+<thead>
+    <tr>
+        <th width="30%">用户名</th>
+        <th>上次登陆</th>
+        <th>创建时间</th>
+        <th>操作</th>
+    </tr>
+</thead>
+<tbody>
+<{foreach $members as $member}>
+<tr <{if not $member.enabled}>class="error"<{/if}>>
+    <td><a href="/useradm.php?action=edit&user=<{$member.name}>"><{$member.name}></a>
+         <{if $member.is_admin}>(管理员)<{/if}>
+    </td>
+    <td><{if is_integer($member.last_login.0)}>
+        <span><{$member.last_login.1}></span>, <span><{$member.last_login.0|date_format:'Y/m/d H:i:s'}></span>
+        <{else}>从未登陆<{/if}></td>
+    <td><{$member.join_time|date_format:'Y/m/d'}></td>
+    <td><a href="/useradm.php?action=edit&user=<{$member.name}>" class="btn btn-mini">编辑</a></td>
+</tr>
+<{/foreach}>
+</tbody>
+</table>
+<a href="?action=new" class="btn"><i class="icon-plus"></i> 添加新用户</a>

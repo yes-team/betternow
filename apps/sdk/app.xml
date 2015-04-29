@@ -1,0 +1,17 @@
+<app>
+	<name>开发工具</name>
+	<author>flaboy@shopex.cn</author>
+	<copyright>shopex</copyright>
+    <desc>实时数据分析框架Betternow的相关文档和开发工具.</desc>
+
+    <plugin module="bnow_sdk" />
+
+    <filter id="f1" class="sdk-test" />
+    <action id="a1" type="flow" item="info" />
+    <trigger filter="f1" action="a1" />
+
+	<menu text="工作台" desc="" link="desk.php" />
+	<menu text="开发手册" desc="" link="doc.php" />
+	<menu text="图表" desc="" link="graph.php" />
+	<menu text="当前环境" desc="" link="env.php" />
+</app>

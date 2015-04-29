@@ -1,0 +1,76 @@
+<{if $alert}>
+<div class="alert">
+    <p>操作成功</p>
+</div>
+<{/if}>
+
+
+<form class="form-horizontal span10" method="POST">
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">token_id</label>
+    <div class="controls">
+        <input type="text" name="token_id" placeholder="唯一标识（例：ecae)" <{if $edit_token.id}>readonly<{/if}>  value="<{$post.id|default:$edit_token.id}>"/>
+    </div>
+  </div>
+
+
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">callback</label>
+    <div class="controls">
+        <{html_options class="span1" name="callback[type]" id="callback-type" options=$callback selected="<{$post.callback.type|default:$edit_token.callback.type}>" }>
+        <em id="callback-tcp" class="">
+            Host:<input type="text" name="callback[host]" placeholder="192.168.75.101" value="<{$post.callback.host|default:$edit_token.callback.host}>" />
+            Port:<input type="text" name="callback[port]" placeholder="9999" class="span1" value="<{$post.callback.port|default:$edit_token.callback.port}>" />
+        </em>
+        <em id="callback-http">
+            Url:<input type="text" class="span4" name="callback[url]" placeholder="http://www.ec-ae.com/callback.php" value="<{$post.callback.urlt|default:$edit_token.callback.url}>" />
+        </em>
+        <em id="callback-apply">
+            Module: <input type="text" name="callback[module]" value="<{$post.callback.module|default:$edit_token.callback.module}>" />
+            Func: <input type="text" name="callback[func]" value="<{$post.callback.func|default:$edit_token.callback.func}>" />
+        </em>
+    </div>
+  </div>
+
+
+  <{if $post || $edit_token }>
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">Token</label>
+    <div class="controls">
+        <input type="text" class="span4" name="token" placeholder=""  value="<{$token|default:$edit_token.token}>" readonly />
+    </div>
+  </div>
+  <{/if}>
+
+  <{if !$post}>
+  <div class="control-group">
+    <div class="controls">
+        <button type="submit" class="btn"><{if $edit_token}>修改<{else}>添加回调并获取token<{/if}></button>
+        <a class="btn" href='/notify.php?action=token_list'>返回</a>
+    </div>
+  </div>
+  <{/if}>
+</form>
+
+
+<script>
+(function(){
+    function toggle(i,v,k) {
+        if(i.value!=v) 
+            $('#'+k).hide();
+        else 
+            $('#'+k).show();
+    }
+
+
+    toggle($('#callback-type')[0], 'http', 'callback-http')
+    toggle($('#callback-type')[0], 'tcp', 'callback-tcp')
+    toggle($('#callback-type')[0], 'apply', 'callback-apply')
+    $('#callback-type').change(function(){
+        toggle(this, 'tcp', 'callback-tcp');
+        toggle(this, 'http', 'callback-http');
+        toggle(this, 'apply', 'callback-apply');
+    })
+
+})();
+</script>

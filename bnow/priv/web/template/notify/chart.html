@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>enotify - Betternow</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <script src="/static/js/jquery-1.7.2.min.js"></script>
+        <script src="/static/js/jquery.tmpl.min.js"></script>
+        
+        <!-- Le styles -->
+        <link href="/static/css/bootstrap.css" rel="stylesheet">
+        
+        <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        
+    </head>
+    <body>
+        <style>
+            #chart-items div{
+                padding-bottom:12px;
+            }
+            #chart-items input{
+                width:100%
+            }
+        </style>
+        <link href="/app/sdk/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
+
+        <div class="span9">
+            <{chart start=$starttime end=$endtime item=$items label="label" width=$width height=$height}>
+        </div>
+
+        <script type="text/javascript" src="/app/sdk/static/google-code-prettify/prettify.js"></script>
+        <script>
+            prettyPrint();
+        </script>
+
+        </div>
+
+        <script src="/static/js/bootstrap.js"></script>
+        <script src="/static/js/jquery.ba-replacetext.min.js"></script>
+        <script src="/static/js/jquery.json-2.3.min.js"></script>
+        <script src="/static/js/jquery.websocket-0.0.1.js"></script>
+        <script src="/static/js/highcharts.js"></script>
+        <script src="/static/js/highcharts-more.js"></script>
+        <script>
+            Highcharts.setOptions({
+                chart: {
+                    type: 'spline',
+                    animation: null,
+                    spacingBottom:0,
+                    spacingLeft:0,
+                    spacingRight:0,
+                    spacingTop:0
+                },
+                global: {
+                    useUTC: false
+                },
+                xAxis: {
+                    type: "datetime"
+                },
+                yAxis:{title:null, min:0},
+                credits:{ enabled: false },
+                legend:{ enabled: true, verticalAlign:"top"},
+                plotOptions: {
+                    series: {
+                        marker: {
+                            enabled: false
+                        }
+                    },
+                    spline:{
+                        animation: false,
+                        shadow: false
+                    },
+                    pie:{
+                        animation: false
+                    },
+                    column:{
+                        animation: false
+                    }
+                },
+                tooltip:{shared:true},
+                //colors: ['#0b62a4', '#7A92A3', '#4da74d', '#afd8f8', '#edc240', '#cb4b4b', '#9440ed'],
+                title: null,
+                subtitle: null
+            });
+        </script>
+    </body>
+</html>

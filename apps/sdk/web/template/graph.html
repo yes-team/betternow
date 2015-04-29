@@ -1,0 +1,74 @@
+<style>
+#chart-items div{
+    padding-bottom:12px;
+}
+#chart-items input{
+    width:100%
+}
+</style>
+<script>
+function add_row(){
+    $('#chart-items').append($('<div><input type="" name="item[]" value="" /></div>'));
+}
+</script>
+<link href="/app/sdk/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
+
+<div class="span9">
+
+    <form class="form-actions">
+        <div class="row">
+            <div class="span4">
+                <div  id="chart-items">
+                <label for="err-begin">图表项</label>
+                <{foreach $items as $item}>
+                <div><input type="" name="item[]" value="<{$item}>" /></div>
+                <{/foreach}>
+                </div>
+                <a href="javascript:add_row()"><div style="text-align:center"><i class="icon-chevron-down"></i></div></a>
+            </div>
+
+            <div class="span4">
+                <label for="err-begin">按时间过滤</label>
+                <input id="err-begin" name="time[begin]"
+                value="<{$smarty.get.time.begin}>" type="text" class="input-small" placeholder="开始"> - 
+                <input id="err-end" name="time[end]"
+                value="<{$smarty.get.time.end}>" type="text" class="input-small" placeholder="结束">
+                <div style="margin-top:5px;">
+                <button type="submit" class="btn btn-large btn-primary">显示图表</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+    <{chart start=$start_time end=$end_time item=$items label="label"}>
+
+<ul class="nav nav-tabs" id="myTab">
+  <li class="active"><a href="#html" data-toggle="tab">html</a></li>
+  <li><a href="#json" data-toggle="tab">json</a></li>
+  <li><a href="#csv" data-toggle="tab">csv</a></li>
+  <li><a href="#iframe" data-toggle="tab">iframe</a></li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane active" id="html">
+      <pre class="prettyprint" style="font-size:75%"><{chart start=$start_time end=$end_time item=$items label="label" dump=true width="320" height="200"}></pre>
+  </div>
+  <div class="tab-pane" id="json">
+      <iframe style="width:100%;height:300px;border:1px solid #ccc" src="<{chart item=$items start=$start_time end=$end_time label="label" mode="js"}>"></iframe>
+  </div>
+  <div class="tab-pane" id="csv">
+      <iframe style="width:100%;height:300px;border:1px solid #ccc" src="<{chart
+      start=$start_time end=$end_time item=$items label="label" mode="csv"}>"></iframe>
+  </div>
+  <div class="tab-pane" id="iframe">
+      <pre class="prettyprint" style="font-size:75%"><{chart start=$start_time end=$end_time item=$items label="label" mode="iframe" dump=true}></pre>
+  </div>
+</div>
+
+</div>
+
+<script type="text/javascript" src="/app/sdk/static/google-code-prettify/prettify.js"></script>
+<script>
+prettyPrint();
+</script>

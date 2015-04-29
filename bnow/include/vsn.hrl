@@ -1,0 +1,1 @@
+-define(bnow_vsn, "%Y%m%d%H%M").

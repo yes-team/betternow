@@ -1,0 +1,31 @@
+<form class="form-horizontal" method="post">
+  <div class="control-group">
+    <label class="control-label" for="inputUser">用户名</label>
+    <div class="controls">
+        <input type="text" id="inputUser" name="user" value="<{$smarty.post.user}>" placeholder="输入用户名">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">密码</label>
+    <div class="controls">
+      <input type="password" name="password" id="inputPassword" placeholder="输入密码">
+    </div>
+  </div>
+  <{if $smarty.session.loginfailed>3}>
+    <div class="control-group">
+    <label class="control-label" for="inputPassword">验证码</label>
+    <div class="controls">
+      <{$capthcha}>
+    </div>
+  </div>
+  <{/if}>
+
+  <div class="control-group">
+    <div class="controls">
+      <label class="checkbox">
+        <input name="remember_me" type="checkbox"> 记住登陆信息 
+      </label>
+      <button type="submit" class="btn">登陆</button>
+    </div>
+  </div>
+</form>

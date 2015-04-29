@@ -1,0 +1,7 @@
+bnow/rel/files/app.config
+bnow/ebin/*
+data/mnesia/*
+data/leveldb/*
+data/dets/*
+data/sasl.log
+data/bnow_filter_runtime.erl

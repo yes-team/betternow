@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# chkconfig:	2345 12 99
+# description: smc
+
+PATH=/sbin:/bin:/usr/bin:/usr/sbin
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+export HOME=/usr/local/smc
+
+echo -n $"${1}ing smc: "
+exec /usr/local/smc/bin/smc $1

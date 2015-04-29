@@ -1,0 +1,78 @@
+
+<form class="form-horizontal span10" method="POST">
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">key</label>
+    <div class="controls">
+        <input type="text" name="key" placeholder="/2000/pv"  value="<{$post.key}>"/>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">interval</label>
+    <div class="controls">
+        <input type="text" name="interval" placeholder="每次检查间隔时间"  value="<{$post.interval}>"/>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">filter</label>
+    <div class="controls">
+        <input type="text" name="filter[range]" value="<{$post.filter.range}>" class="span1" />分钟内
+        <{html_options class="span2" name="filter[type]" id="filter-type" options=$filter.type value="<{$post.filter.type}>" }>大于
+        <input type="text" name="filter[threshold]" value="1" class="span1" value="<{$post.filter.threshold}>" />
+        <em id="filter-rate">％</em>
+        <em id="filter-num">超过<input type="text" name="filter[num]" value="1" id="" class="span1" value="<{$post.filter.num}>" />次</em>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">action</label>
+    <div class="controls">
+        <input type="text" class="span6" name="action" placeholder="http://session_tracer/" value="<{$post.action}>" />
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">callback_id</label>
+    <div class="controls">
+        <input type="text" name="callback_id" value="<{$post.callback_id}>" />
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">token_id</label>
+    <div class="controls">
+        <{html_options class="span1" name="token_id" id="" options=$tokens selected="<{$post.token_id}>" }>
+    </div>
+  </div>
+
+
+  <div class="control-group">
+    <div class="controls">
+      <button type="submit" class="btn">保存</button>
+    </div>
+  </div>
+</form>
+
+
+<script>
+(function(){
+    function toggle(i,v,k) {
+        console.info(i.value)
+        if(i.value!=v) 
+            $('#'+k).hide();
+        else 
+            $('#'+k).show();
+    }
+
+    toggle($('#filter-type'), 'num', 'filter-num')
+    $('#filter-type').change(function(){
+        toggle(this, 'num', 'filter-num');
+    })
+    toggle($('#filter-type'), 'rate', 'filter-rate')
+    $('#filter-type').change(function(){
+        toggle(this, 'rate', 'filter-rate');
+    })
+
+})();
+</script>

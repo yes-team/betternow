@@ -1,0 +1,1002 @@
+<style>
+    #workground{
+        position: absolute;
+        top:50px;
+        left:0;
+        font-family: Consolas, 'Liberation Mono', Courier, monospace;
+    }
+    #panel1, #panel2, #panel3{
+        float:left;
+        margin-left:2px;
+    }
+    .t_body{
+        overflow-x:hidden;
+        overflow-y:scroll;
+        border:1px solid #ccc;
+        border-top:none;
+    }
+    #t_list, #t_filter{ 
+        margin-bottom:2px
+    }
+    #workground .subtitle{
+        position: relative;
+        height:20px;
+        background:#0188cc;
+        padding-left:5px;
+        font-size:11px;
+        -moz-border-radius-topleft: 4px;
+        -moz-border-radius-topright: 4px;
+        -webkit-border-top-left-radius: 4px;
+        -webkit-border-top-right-radius: 4px;
+        border-radius-topleft: 4px;
+        border-radius-topright: 4px;
+
+        background-color: #fafafa;
+        background-image: -moz-linear-gradient(top, #ffffff, #f2f2f2);
+        background-image: -webkit-gradient(linear, 0 0, 0 100%, from( #ffffff), to( #f2f2f2));
+        background-image: -webkit-linear-gradient(top, #ffffff, #f2f2f2);
+        background-image: -o-linear-gradient(top, #ffffff, #f2f2f2);
+        background-image: linear-gradient(to bottom, #ffffff, #f2f2f2);
+        background-repeat: repeat-x;
+        border: 1px solid #d4d4d4;
+        filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffffff', endColorstr='#fff2f2f2', GradientType=0);
+        -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+        -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+    }
+    #workground .row{
+        margin:0;
+    }
+    #workground .subtitle label{
+        display:inline;
+        margin:0 0 0 15px;
+        font-size:11px;
+        cursor: pointer;
+    }
+    #workground .subtitle .btn{
+        padding:0 8px;
+        height:20px;
+        line-height:20px;
+        font-size:11px;
+        margin:0 2px;
+    }
+    #workground .odd{
+        background:#f3f6fa;
+    }
+    #workground .active{
+        background:#0188cc;
+        color:#fff;
+    }
+    #workground .subtitle input[type="radio"]{
+        top:-2px;
+        position: relative;
+        margin:0 2px 0 0; 
+        border:0;
+        font-size:50%;
+    }
+    .color-block{
+        margin:4px 0 0 1px;
+        width:10px; 
+        height:10px;
+        line-height:14px;
+        border:1px solid #000;
+        display:block;
+        float:left
+        -moz-border-radius: 8px;
+        -webkit-border-radius: 8px;
+        border-radius: 8px;
+    }
+    .channel_name{
+        margin-left:4px;
+        width:110px;
+        white-space:nowrap;
+        overflow:hidden;
+    }
+    #workground form{
+        margin:0;
+    }
+    #data .key{width:80px;margin:5px}
+    #data .value{width:180px;margin:5px}
+    #data b{font-size:75%;padding:8px 5px 0 0; text-align:right; width:24px; display:block; float:left}
+    #data div{rgb(210,232,246);background:#fff}
+</style>
+
+<link rel="stylesheet" href="/app/sdk/static/codemirror/lib/codemirror.css" />
+<link rel="stylesheet" href="/app/sdk/static/codemirror/theme/monokai.css" />
+<script src="/app/sdk/static/codemirror/lib/codemirror.js"></script>
+<script src="/app/sdk/static/codemirror/mode/yaml/yaml.js"></script>
+
+<div id="workground" style="visibility:	hidden">
+    <div id="panel1">
+        <div id="t_channel_title" class="subtitle">
+            数据流频道
+        </div>
+        <div id="t_channel" style="position:relative" class="t_body"></div>
+        <form id="channel-ipt-box">
+            <input id="channel-ipt" placeholder="输入频道名称..." type="text"
+            style="margin:0;padding:0;width:148px;background:#ffd" >
+        </form>
+    </div>
+    <div id="panel2">
+        <div id="t_list_title" class="subtitle" style="overflow-x:hidden;white-space:nowrap">
+            实时数据流
+            <label><input type="radio" name="msg-mode" checked="checked"
+                 onclick="window.list_mode=-1;$('#msg-limit').hide()" />无限接收</label>
+            <label><input type="radio" name="msg-mode" id="msg-disabled"
+                onclick="window.list_mode=0;$('#msg-limit').hide()" />暂停</label>
+            <label><input type="radio" name="msg-mode"
+                onclick="window.list_mode=100;$('#msg-limit').show().html('0/100')"/>获取100条
+                <span style="color:red;display:inline-block;width:50px;text-align:right"
+                    id="msg-limit">100/100</span></label>
+        </div>
+        <div id="t_list" class="t_body" style="overflow-x:hidden"></div>
+
+        <div id="t_msg_title" class="subtitle" style="overflow-x:hidden">
+            <span id="t_msg_title_0" class="span1" style="margin-left:0;">数据流内容</span>
+            <span id="t_msg_name"></span>
+            <button id="t_msg_title_1" class="btn" style="float:right"
+                onclick="msgmker.setValue(msgviewer.getValue())">复制到构造器</button>
+        </div>
+        <div id="t_msgviewer" class="t_body"></div>
+    </div>
+    <div id="panel3">
+        <div id="t_filter_title" class="subtitle dropdown">
+            临时触发器
+            <label><input type="radio" onclick="trigger.start()" name="filter-enable" />启用</label>
+            <label><input type="radio" onclick="trigger.stop()" name="filter-enable" checked="checked" />停用</label>
+            <button class="btn" style="float:right" onclick="trigger.export()">XML</button>
+        </div>
+        <div id="t_filter" class="t_body">
+            <ul id="c_trigger" class="dropdown" style="margin:0;padding:2px 5px"></ul>
+            <a id="new_filter_btn" href="javascript:trigger.add($('#c_trigger'), 'filter')">添加过滤器</a>
+        </div>
+        <div id="t_msgmker_title" class="subtitle">
+            消息构造器
+            <a class="handle-popover" href="javascript:volid()" rel="popover"
+                data-content="#{now} = 当前时间戳&lt;br/&gt;#{random:0-100} = 随机数" data-original-title="特殊标记">[?]</a>
+                <label><input type="radio" onclick="select_msgmker(0)" name="msgmker_select" value="0" id="msgmker_select_0" />#1</label>
+                <label><input type="radio" onclick="select_msgmker(1)" name="msgmker_select" value="1" id="msgmker_select_1" />#2</label>
+                <label><input type="radio" onclick="select_msgmker(2)" name="msgmker_select" value="2" id="msgmker_select_2" />#3</label>
+            <button class="btn" style="float:right" onclick="send_data()">发送</button>
+        </div>
+        <textarea id="t_msgmker" class="t_body" ></textarea>
+        </div>
+    </div>
+</div>
+
+<ul class="dropdown-menu" id="c_trigger_menu">
+  <li class="disabled-when-top"><a tabindex="-1" href="javascript:trigger.add(trigger.current.parent('ul'), 'assert')">添加条件</a></li>
+  <li class="disabled-when-top"><a tabindex="-1" href="javascript:trigger.add(trigger.current.parent('ul'), 'action')">添加动作</a></li>
+  <li class="disabled-when-top"><a tabindex="-1" href="javascript:trigger.add(trigger.current.parent('ul'), 'set')">设置变量</a></li>
+  <li><a tabindex="-1" href="javascript:trigger.add(trigger.current.parent('ul'), 'filter')">新过滤器</a></li>
+  <li class="divider filter-only"></li>
+  <li class="dropdown-submenu filter-only">
+    <a tabindex="-1" href="javascript:void()">子级别</a>
+    <ul class="dropdown-menu">
+      <li><a tabindex="-1" href="javascript:trigger.add($('ul', trigger.current), 'assert')">添加条件</a></li>
+      <li><a tabindex="-1" href="javascript:trigger.add($('ul', trigger.current), 'action')">添加动作</a></li>
+      <li><a tabindex="-1" href="javascript:trigger.add($('ul', trigger.current), 'set')">设置变量</a></li>
+      <li><a tabindex="-1" href="javascript:trigger.add($('ul', trigger.current), 'filter')">新过滤器</a></li>
+  </ul>
+  </li>
+  <li class="divider"></li>
+  <li><a tabindex="-1" href="javascript:trigger.delete()">删除</a></li>
+</ul>
+
+
+<div class="modal hide fade" id="action_model">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>动作</h3>
+  </div>
+  <div class="modal-body">
+   <form class="form-horizontal">
+        <div class="control-group">
+            <label class="control-label" for="inputClassname">类型</label>
+            <div class="controls">
+                <select name="mode" onchange="trigger.action.switch_tab(this.value)">
+                    <option value="flow">数据流</option>
+                    <option value="rrd">更新统计曲线</option>
+                    <option value="topn">top-n</option>
+                    <option value="plugin">插件</option>
+                </select>
+            </div>
+          </div>
+
+        <div class="action-mode" type="flow">
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">频道名称</label>
+                <div class="controls">
+                  <input type="text"  name="flow_item" />
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="controls">
+                <label class="radio">
+                  <input type="checkbox" id="input_flow_autojoin" checked="checked" />
+                  加入频道
+                </label>
+                </div>
+            </div>
+       </div>
+
+        <div class="action-mode" type="rrd">
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">条目名称</label>
+                <div class="controls">
+                  <input type="text"  name="rrd_item" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">值</label>
+                <div class="controls">
+                  <input type="text"  name="rrd_value" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">合并算法</label>
+                <div class="controls">
+                    <select name="rrd_fun" id="rrd_fun">
+                        <option value="sum">求和</option>
+                        <option value="avg">平均值</option>
+                        <option value="max">选取最大值</option>
+                        <option value="min">选取最小值</option>
+                    </select>
+                </div>
+            </div>
+       </div>
+
+        <div class="action-mode" type="topn">
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">条目名称</label>
+                <div class="controls">
+                  <input type="text"  name="topn_item" placeholder="字符表达式" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">项名称</label>
+                <div class="controls">
+                  <input type="text"  name="topn_record" placeholder="字符表达式" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">值</label>
+                <div class="controls">
+                  <input type="text"  name="topn_value" placeholder="数学表达式" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">每条目项数</label>
+                <div class="controls">
+                    <select name="topn_size">
+                        <option>5</option>
+                        <option>10</option>
+                        <option>20</option>
+                        <option>30</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">保留条目数</label>
+                <div class="controls">
+                    <select name="topn_archive_limit">
+                        <option value="24">24</option>
+                        <option value="72">24*3</option>
+                        <option value="148">24*7</option>
+                        <option value="720">24*30</option>
+                    </select>
+                </div>
+            </div>
+       </div>
+
+        <div class="control-group action-mode" type="plugin">
+            <label class="control-label" for="inputClassname">插件模块名称</label>
+            <div class="controls">
+              <input type="text"  name="plugin_name" />
+            </div>
+        </div>
+
+
+    </form>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void()" onclick="trigger.finish_edit(this, false)" class="btn">关闭</a>
+    <a href="javascript:void()" onclick="trigger.finish_edit(this, true)" class="btn btn-primary">保存</a>
+  </div>
+</div>
+
+
+<div class="modal hide fade" id="set_model">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>设置变量</h3>
+  </div>
+  <div class="modal-body">
+      <form class="form-horizontal">
+        <div class="control-group">
+            <label class="control-label" for="inputsetVar">变量名</label>
+            <div class="controls">
+              <input type="text" id="inputsetVar" name="var" placeholder="变量名表达式">
+            </div>
+          </div>
+        <div class="control-group">
+            <label class="control-label" for="inputsetValue">值</label>
+            <div class="controls">
+              <input type="text" id="inputsetValue" name="value" placeholder="值表达式">
+            </div>
+          </div>
+        <div class="control-group">
+            <label class="control-label" for="inputPassword">表达式模式</label>
+            <div class="controls">
+                <label class="radio">
+                 <input type="radio" name="type" value="string" checked>
+                  字符串
+                </label>
+                <label class="radio">
+                  <input type="radio" name="type" value="number">
+                  数字
+                </label>
+            </div>
+          </div>
+        <div class="control-group">
+            <label class="control-label" for="inputPassword">修饰器</label>
+            <div class="controls">
+              <input type="text" name="modifier" />
+            </div>
+          </div>
+      </form>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void()" onclick="trigger.finish_edit(this, false)" class="btn">关闭</a>
+    <a href="javascript:void()" onclick="trigger.finish_edit(this, true)" class="btn btn-primary">保存</a>
+  </div>
+</div>
+
+<div class="modal hide fade" id="assert_model">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>条件</h3>
+  </div>
+  <div class="modal-body">
+    <form class="form-horizontal">
+        <div class="control-group">
+            <label class="control-label" for="inputClassname">比较方式</label>
+            <div class="controls">
+                <select name="mode" onchange="trigger.assert.switch_tab(this.value)">
+                    <option value="string">字符串比较</option>
+                    <option value="number">数字比较</option>
+                    <option value="isset">变量存在</option>
+                    <option value="isnotset">变量不存在</option>
+                    <option value="distinct">单位时间内去重</option>
+                </select>
+            </div>
+          </div>
+
+          <table style="margin:auto" class="assert-mode" type="string" >
+              <tr> 
+                  <td> <input name="str_left" type="text" class="span2" /> </td>
+                  <td>
+                    <select name="str_test" class="span2" id="str_test">
+                        <option value="is">等于</option>
+                        <option value="has">包含</option>
+                        <option value="not has">不包含</option>
+                        <option value="match">正则匹配</option>
+                        <option value="not match">正则不匹配</option>
+                    </select>
+                  </td>
+                  <td> <input type="text" name="str_right" class="span2" /> </td>
+              </tr>
+          </table>
+
+          <table style="margin:auto" class="assert-mode" type="number">
+              <tr> 
+                  <td> <input type="text" name="num_left" class="span2" /> </td>
+                  <td>
+                    <select class="span2" name="num_test" id="num_test">
+                        <option value="=">==</option>
+                        <option value="&gt;" >&gt;</option>
+                        <option value="&gt;=" >&gt;=</option>
+                        <option value="&lt;" >&lt;</option>
+                        <option value="&lt;=" >&lt;=</option>
+                    </select>
+                  </td>
+                  <td> <input type="text" name="num_right" class="span2" /> </td>
+              </tr>
+              
+          </table>
+
+            <div class="control-group assert-mode" type="isset">
+                <label class="control-label" for="inputClassname">变量名称</label>
+                <div class="controls">
+                  <input type="text"  name="isset_var" placeholder="key">
+                </div>
+            </div>
+
+            <div class="control-group assert-mode" type="isnotset">
+                <label class="control-label" for="inputClassname">变量名称</label>
+                <div class="controls">
+                  <input type="text"  name="isnotset_var" placeholder="key">
+                </div>
+            </div>
+
+        <div class="assert-mode" type="distinct">
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">去重Key</label>
+                <div class="controls">
+                  <input type="text"  name="distinct_key" placeholder="表达式">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">去重周期</label>
+                <div class="controls">
+                    <select name="distinct_ttl" id="distinct_ttl">
+                        <optgroup label="历法周期">
+                            <option value="1day">每日</option>
+                            <option value="1week">每周</option>
+                            <option value="1month">每月</option>
+                        </optgroup>
+                        <optgroup label="绝对时间周期">
+                            <option value="600">10分钟</option>
+                            <option value="3600">1小时</option>
+                            <option value="86400">24小时</option>
+                            <option value="259200">3天(42小时)</option>
+                            <option value="604800">7天(168小时)</option>
+                            <option value="2592000">1个月(720小时)</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="inputClassname">留存凭据</label>
+                <div class="controls">
+                  <input type="text"  name="distinct_value" placeholder="表达式">
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void()" onclick="trigger.finish_edit(this, false)" class="btn">关闭</a>
+    <a href="javascript:void()" onclick="trigger.finish_edit(this, true)" class="btn btn-primary">保存</a>
+  </div>
+</div>
+
+<div class="modal hide fade" id="filter_model">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>过滤器</h3>
+  </div>
+  <div class="modal-body">
+    <form class="form-horizontal">
+        <div class="control-group">
+            <label class="control-label" for="inputClassname">事件类型</label>
+            <div class="controls">
+              <input type="text"  name="class" placeholder="@class">
+            </div>
+          </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void()" onclick="trigger.finish_edit(this, false)" class="btn">关闭</a>
+    <a href="javascript:void()" onclick="trigger.finish_edit(this, true)" class="btn btn-primary">保存</a>
+  </div>
+</div>
+
+<div class="modal hide fade" id="xml_model">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>XML</h3>
+  </div>
+  <div class="modal-body" style="padding:0">
+      <textarea id="xml_editor" style="width:100%;height:400px"></textarea>
+  </div>
+</div>
+
+<script>
+function setsize(){
+    $('#workground').css('visibility', 'hidden');
+    var w = $(window).width();
+    var h = $(window).height() - 60;
+    var p1_w = 150;
+    var p3_w = 350;
+    var p2_w = w - p1_w - 20 - p3_w;
+    $('#panel1').width(p1_w);
+    $('#panel2').width(p2_w);
+    $('#panel3').width(p3_w);
+
+    $('#t_msg_name').width(p2_w - $('#t_msg_title_0').width() - $('#t_msg_title_1').width());
+
+    $('#t_channel').height(h-20-$('#channel-ipt-box').height());
+
+    $('#t_list').height(h/2-20);
+    $('#t_filter').height(h/2-20);
+    msgmker.setSize(null, h/2-24);
+    msgviewer.setSize(null, h/2-24);
+    $('#workground').css('visibility', 'visible');
+}
+
+var color_map = {}, channel_color={};
+var ws, last_active;
+var channel_tpl = $.template( null, 
+'<div class="row" style="white-space:nowrap;overflow-x:hidden">\
+    <b class="span1 color-block" style="background:${color}"></b>\
+    <span class="span1 channel_name">${name}</span>\
+    <i style="cursor:pointer;right:0;z-index:999;position:absolute" onclick="leave_channel(\'${color}\',this)" class="icon-remove"></i></div>' ); 
+var item_tpl = $.template( null, '<div class="row" style="white-space:nowrap;overflow-x:hidden"><b class="span1 color-block"\
+        style="background:${color}"></b><span\
+        style="white-space:nowrap;margin-left:5px;" class="span2 width:800px">${data}</span></li>');
+var list_odd = true;
+var list_mode = -1;
+
+function change_nav(){
+    var chns = [];
+    $("#t_channel .channel_name").each(function(i, t){
+                chns.push($(this).text());
+    });
+    var url = window.location.toString();
+    var p=url.indexOf("#");
+    if(p>0){
+        url = url.substr(0,p);
+    }
+    window.location = url +"#" + chns.join(",");
+}
+
+function join_channel(cname){
+    for(var i in color_map){
+        if(!color_map[i]){
+            color_map[i] = cname;
+            var channel = {
+                name: cname,
+                color: i 
+            };
+            ws.send('join', cname);
+            $.tmpl( channel_tpl, channel ).appendTo( "#t_channel" );
+            channel_color[cname] = i;
+            change_nav();
+            return true;
+        }
+    }
+    return false;
+}
+
+function leave_channel(color, e){
+    ws.send('leave', color_map[color]);
+    delete(channel_color[color_map[color]]);
+    color_map[color] = false;
+    $(e).parent('div').remove();
+    change_nav();
+}
+
+function ws_channel(options){
+    var prefix = window.location.protocol=="https:"?"wss://":"ws://";
+    var url = prefix+window.location.host+"/api/live";
+    var obj = $.websocket(url, options);
+    obj.join = function(channel){
+        this.send('join', channel);
+    }
+
+    obj.leave = function(channels){
+        this.send('leave', channel);
+    }
+
+    obj.channels = function(){
+    }
+
+
+    return obj;
+}
+
+var basetitle = window.document.title;
+var counter = 0;
+window.onfocus = function(){
+    window.document.title = basetitle
+    counter = 0;
+};
+
+
+var row_tpl = $.template( null, '<div class="${cls}"><b>${id}</b><input class="key" name="k[]" placeholder="key" value="${key}"/><input class="value" name="v[]" placeholder="value" value="${value}" /></div>');
+function add_msgmker_row(k, v){
+    var clsname=$("#data div:last").hasClass('odd')?"":'odd';
+    $.tmpl( row_tpl, {'cls':clsname, id:$("#data").children().length+1 , key: k, value: v} ).appendTo( "#data" );
+}
+
+function send_data(){
+    $.ajax({
+            type: "POST",
+            url: "?action=data-builder-send",
+            data: {'data': msgmker.getValue()}
+        }).done(function(a) { 
+        $('#result').html(a)
+    });
+}
+
+function select_msgmker(i){
+    localStorage.setItem( "msgmker_selected" , i );
+    $('#msgmker_select_'+ i)[0].checked = 'checked';
+    var lastData = localStorage.getItem("msgmker" + i);
+    window.msgmker.setValue(lastData?lastData:'');
+}
+
+String.prototype.lpad = function(padString, length) {
+	var str = this;
+    while (str.length < length)
+        str = padString + str;
+    return str;
+}
+
+$(function(){
+    $('#msg-limit').hide();
+
+    var mkerSel = localStorage.getItem("msgmker_selected");
+    if ( isNaN(mkerSel) ) mkerSel =0;
+
+    var lastData = localStorage.getItem("msgmker" + mkerSel);
+    if(lastData){
+        $('#t_msgmker').html(lastData);
+    }
+    window.msgmker = CodeMirror.fromTextArea(document.getElementById("t_msgmker"), {
+        mode: {name: "yaml", alignCDATA: true},
+        lineNumbers: true,
+        lineWrapping: true,
+        onChange: function(e){
+            localStorage.setItem("msgmker" + $('input[name=msgmker_select]:checked')[0].value , e.getValue())
+        }
+    });
+    select_msgmker(mkerSel);
+
+    window.msgviewer = CodeMirror.fromTextArea(document.getElementById("t_msgviewer"), {
+        mode: {name: "yaml", alignCDATA: true},
+        readOnly: true,
+        lineNumbers: true,
+        lineWrapping: true
+    });
+
+    setsize();
+    $.each(Highcharts.getOptions("Colors").colors, function(k,c){
+        color_map[c] = false;
+    });
+
+    ws = ws_channel({
+        open: function(){
+            var url = window.location.toString();
+            var p=url.indexOf("#");
+            var channels = ["error", "debug","info"];
+            if(p>0 && url.substr(p+1).length>0){
+                channels = url.substr(p+1).split(",");
+            }
+            $(channels).each(function(i,c){
+                join_channel(c);
+            });
+        },
+        close: function(){
+            alert('close');
+        },
+        events: {
+            info: function(e) { 
+                $('#info').append(e.data + '<br>');
+            },
+            error: function(e) { 
+                $('#info').append(e.data + '<br>');
+            },
+            join: function(e,a){
+                console.info(["join",e,a]);
+            },
+            left: function(e,a){
+                console.info(["left",e,a]);
+            },
+            data: function(e, a){
+                if(list_mode!=0){
+                    if(list_mode>0){
+                        list_mode--;
+                        $('#msg-limit').html((100-list_mode) + "/100");
+                        if(list_mode==0){
+                            $('#msg-disabled').attr("checked",true);
+                        }
+                    }
+                    counter++;
+                    window.document.title="(" + counter + ")" + basetitle;
+                    var el = $.tmpl( item_tpl, {'color':channel_color[e.channel],
+                        data: e.data['@title'] ? e.data['@title'] : new Date(e.data['@time']*1000)
+                        } );
+                        if(list_odd){
+                            el.addClass("odd");
+                            list_odd = false;
+                        }else{
+                            list_odd = true;
+                        }
+                        el.prependTo("#t_list");
+                        el.click(function(){
+                            if(last_active){
+                                last_active.removeClass("active");
+                            }
+                            $('#t_msg_name').html($(this).html());
+                            $(this).addClass("active");
+
+                            var msgtxt = "";
+                            var maxkeylen = 0;
+                            for(var i in e.data){
+                                maxkeylen = Math.max(i.length, maxkeylen);
+                            }
+                            for(var i in e.data){
+                                msgtxt += i.lpad(" ", maxkeylen+1) +": "+e.data[i].replace(/:/g,"\\:")+"\n";
+                            }
+
+                            window.msgviewer.setValue(msgtxt);
+                            last_active = $(this);
+                        });
+                    if($("#t_list").children().length > 1000){
+                        $("#t_list").children().last().remove();
+                    }
+                }
+            }
+        }
+    });
+
+    $('#channel-ipt-box').submit(function(e){
+        join_channel($('#channel-ipt').val());
+       $('#channel-ipt').val("");
+       return false;
+    });
+
+    add_msgmker_row("@class",'');
+    add_msgmker_row("@time",'');
+    for(var i=0;i<3;i++){
+        add_msgmker_row();
+    }
+
+    $('.modal form').bind('submit', function(e){
+        e.stopImmediatePropagation();
+        trigger.finish_edit(e.target, true);
+    });
+
+    $(window).resize(setsize);
+    $('a.handle-popover').popover();
+});
+
+var trigger = {
+    label:function(opts){
+        opts.class = 'label';
+        var label = $('<span />', opts);
+        $('<b />', {'class':'caret'}).appendTo(label);
+        label.bind('click', trigger.show_menu);
+        return label;
+    },
+    show_menu:function(e){
+        if(!trigger.started){
+            var el = $(e.target).parent('li');
+            var menuel = $('#c_trigger_menu');
+            if(el.attr('type')=='filter'){
+                if(el.parent().attr('id')=='c_trigger'){
+                    $('.disabled-when-top', menuel).hide();
+                }
+                $('.filter-only', menuel).show();
+            }else{
+                $('.disabled-when-top', menuel).show();
+                $('.filter-only', menuel).hide();
+            }
+            var p = el.offset();
+            trigger.current = el;
+            menuel.css("top", p.top+20).css("left", p.left).show();
+            $(window.document).bind('click', trigger.hide_menu);
+            e.stopImmediatePropagation();
+        }
+    },
+    hide_menu: function(e){
+        $('#c_trigger_menu').hide();
+        $(window.document).unbind('click', trigger.hide_menu);
+    },
+    delete:function(){
+        trigger.current.remove();
+    },
+    add:function(el, type){
+        trigger.cbox = el[0];
+        trigger.ctype = type;
+        trigger[type].open(trigger.cbox);
+        $('#'+type+'_model').modal();
+    },
+    finish_edit:function(el, save){
+        var el = $(el).parent().parent();
+        el.modal('hide');
+        if(save){
+            var obj = {};
+            $('input, select', el).each(function(n,i){
+                i = $(i);
+                if(i.attr('type')=='radio'){
+                    if(i.attr('checked')){
+                        obj[i.attr('name')] = i.val();
+                    }
+                }else if(i.attr('type')=='checkbox'){
+                    if(!obj[i.attr('name')]) obj[i.attr('name')]=[];
+                    obj[i.attr('name')].push(i.val());
+                }else{
+                    obj[i.attr('name')] = i.val();
+                }
+            });
+            if(trigger.cbox.tagName=='UL'){
+                var row = $('<li />').attr('type', trigger.ctype);
+                obj = trigger[trigger.ctype].proc(obj);
+                trigger.label({text: trigger[trigger.ctype].label}).appendTo(row);
+                row.attr('data', window.JSON.stringify(obj.attr));
+                $('<span />', {html: obj.text}).appendTo(row);
+                if(trigger.ctype=='filter'){
+                    $('<ul />').appendTo(row);
+                }
+                row.appendTo(trigger.cbox);
+            }else{
+                var row = trigger.cbox;
+                obj = trigger[trigger.ctype].change(row, obj);
+                row.attr('data', window.JSON.stringify(obj));
+            }
+        }
+    },
+    filter: {
+        label:'过滤器',
+        open:function(el){ },
+        proc: function(attr){
+            return {text:"@class="+attr.class, 'attr':attr};
+        }
+    },
+    assert: {
+        label:'条件',
+        open:function(el){
+            if(el.tagName=='UL'){
+                trigger.assert.switch_tab("string");
+            }
+        },
+        proc: function(attr){
+            switch(attr.mode){
+                case 'string':
+                    var testfun = $('#str_test option[value=\"'+attr.str_test+'\"]').html();
+                    var label = attr.str_left + " " + testfun +" "+ attr.str_right;
+                    return {text:label, 'attr':{left:attr.str_left,
+                    right:attr.str_right, test:attr.str_test}};
+                case 'number':
+                    var testfun = $('#num_test option[value=\"'+attr.num_test+'\"]').html();
+                    var label = attr.num_left + " " + testfun +" "+ attr.num_right;
+                    return {text:label, 'attr':{left:attr.num_left,
+                    right:attr.num_right, test:attr.num_test}};
+                case 'isset':
+                    var label = '变量 ' + attr.isset_var + " 存在";
+                    return {text:label, 'attr':{left:attr.isset_var, test:"isset"}};
+                case 'isnotset':
+                    var label = '变量 ' + attr.isnotset_var + " 不存在";
+                    return {text:label, 'attr':{left:attr.isnotset_var, test:"not isset"}};
+                case 'distinct':
+                    var ttl = $('#distinct_ttl option[value=\"'+attr.distinct_ttl+'\"]').html();
+                    if(attr.distinct_value){
+                        var rightval = attr.distinct_ttl+":"+attr.distinct_value;
+                    }else{
+                        var rightval =  attr.distinct_ttl;
+                    }
+                    var label = '去重复,key=' + attr.distinct_key + "," + ttl;
+                    return {text:label, 'attr':{left:attr.distinct_key, test:'distinct', right: rightval}};
+            }
+        },
+        switch_tab: function(key){
+            $('#assert_model .assert-mode').hide();
+            $('#assert_model .assert-mode[type='+key+']').show();
+        }
+    },
+    set: {
+        label:'变量',
+        open:function(el){ },
+        proc: function(attr){
+            var label = attr.var+'='+attr.type+"("+attr.value+")";
+            if(attr.modifier){
+                label = label + "|" + attr.modifier;
+            }
+            return {text:label, 'attr':attr};
+        }
+    },
+    action: {
+        label:'动作',
+        open:function(el){
+            if(el.tagName=='UL'){
+                trigger.action.switch_tab('flow');
+            }
+        },
+        proc: function(attr){
+            switch(attr.mode){
+                case 'flow':
+                    var label = "实时数据流，频道:" + attr.flow_item;
+                    if($('#input_flow_autojoin').attr('checked')){
+                        join_channel(attr.flow_item);
+                    }
+                    return {text:label, attr:{type:attr.mode, item:attr.flow_item}};
+                case 'rrd':
+                    attr2 = {};
+                    var rrd_fun = $('#rrd_fun option[value=\"' + attr.rrd_fun + '\"]').html();
+                    var label = "曲线图, 项目: <a href=\"/app/sdk/graph.php?item[]="
+                        + attr.rrd_item + "\" target=\"_blank\">" + attr.rrd_item
+                        + "</a>, 值:" + attr.rrd_value + ", "+ rrd_fun;
+                    return {text:label, 'attr':{type:attr.mode, item:attr.rrd_item, value:attr.rrd_value, fun:attr.rrd_fun}};
+                case 'topn':
+                    var label = 'top-n 项目'+ attr.topn_item
+                                +',条目'+ attr.topn_record
+                                +',n='+ attr.topn_size
+                                +',保存'+ attr.topn_archive_limit+'份';
+
+                    return {text:label, 'attr':{type:attr.mode,
+                            item:attr.topn_item,
+                            value:attr.topn_value,
+                            record:attr.topn_record,
+                            size:attr.topn_size,
+                            archive_limit:attr.topn_archive_limit,
+                    }};
+                case 'plugin':
+                    var label = '插件 ' + attr.plugin_name;
+                    return {text:label, 'attr':{type:attr.mode, item:attr.plugin_name}};
+            }
+        },
+        switch_tab: function(key){
+            $('#action_model .action-mode').hide();
+            $('#action_model .action-mode[type='+key+']').show();
+        }
+    },
+    dump:function(){
+        var box = $('<div />');
+        $('#c_trigger > li[type=filter]').each(function(n,el){
+            trigger.export_item($(el)).appendTo(box);
+        });
+        return box.html();
+    },
+    export:function(){
+        $('#xml_editor').val(trigger.formatXml(trigger.dump()));
+        $('#xml_model').modal();
+    },
+    export_item:function(el){
+        var type = el.attr('type');
+        var attrs = window.JSON.parse(el.attr('data'));
+        var dom=$('<'+type+' />', attrs);
+        $('> ul > li', el).each(function(n, c){
+            trigger.export_item($(c)).appendTo(dom);
+        });
+        return dom;
+    },
+    formatXml:function(xml) {
+        var formatted = '';
+        var reg = /(>)(<)(\/*)/g;
+        xml = xml.replace(reg, '$1\r\n$2$3');
+        var pad = 0;
+        $.each(xml.split('\r\n'), function(index, node) {
+            var indent = 0;
+            if (node.match( /.+<\/\w[^>]*>$/ )) {
+                indent = 0;
+            } else if (node.match( /^<\/\w/ )) {
+                if (pad != 0) {
+                    pad -= 1;
+                }
+            } else if (node.match( /^<\w[^>]*[^\/]>.*$/ )) {
+                indent = 1;
+            } else {
+                indent = 0;
+            }
+            var padding = '';
+            for (var i = 0; i < pad; i++) {
+                padding += '  ';
+            }
+            formatted += padding + node + '\r\n';
+            pad += indent;
+        });
+        return formatted;
+    },
+    start: function(){
+        ws.send('tmp_trigger_start', '<app>'+ trigger.dump() + '</app>');
+        trigger.started = true;
+        $('#new_filter_btn').hide();
+    },
+    stop: function(){
+        ws.send('tmp_trigger_stop');
+        trigger.started = false;
+        $('#new_filter_btn').show();
+    }
+}
+</script>

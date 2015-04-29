@@ -1,0 +1,147 @@
+<link href="/app/sdk/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
+<style>
+    h2{margin-top: 40px}
+    h3{margin-top: 20px}
+</style>
+
+<div class="row">
+<{include file='notify/menu.html'}>
+
+<div class="span10" >
+<pre>
+    以下api皆需要通过bnow验证，api_secret_key, api_time
+</pre>
+<div class="span8">
+    <h3>使用方法</h3>
+    <div class="row">
+        <div class="span8">
+            <h5>
+                add_token
+            </h5>
+            <pre class="prettyprint">
+&lt;?php
+$data = array(
+    'api' => 'add_token',
+    'token_id' => 'test',
+    'callback' => array(
+            'type' => 'http',
+            'url' => 'http://www.shopex.cn/',
+        ),
+);
+$query = http_build_query($data);
+$re = file_get_contents("http://bnow-host.com/app/enotify/api.php?".$query);
+var_dump(json_decode($re));
+?&gt
+
+<strong>callback type的三种形式</strong>
+http, tcp, apply
+与其对应的callback其他参数
+    http:
+        url
+    tcp:
+        host
+        port
+    apply:
+        module
+        func
+            </pre>
+            <h5>
+                add_rule
+            </h5>
+            <pre>
+&lt;?php
+$data = array(
+    'api' => 'add_rule',
+    'key' => '/2000/pv', # bnow_rrd key
+    'token_id' => 'token_id',
+    'interval' => 5, #每次检查时间间隔
+    'filter' => array(
+            'type' => 'avg',
+            'range' => 5,
+            'threshold' => 5,
+        ),
+    'callback' => array(
+            'type' => 'http',
+            'url' => 'xxxxx.com',
+        ),
+    'callback_id' => "2000"
+    'action' => 'action',
+);
+$query = http_build_query($data);
+$re = file_get_contents("http://bnow-host.com/app/enotify/api.php?".$query);
+var_dump(json_decode($re));
+?&gt
+
+            </pre>
+
+            <h5>
+                list_rule
+            </h5>
+            <pre>
+&lt;?php
+$data = array(
+    'api' => 'list_rule',
+    'token_id' => 'token_id',
+);
+$query = http_build_query($data);
+$re = file_get_contents("http://bnow-host.com/app/enotify/api.php?".$query);
+var_dump(json_decode($re));
+?&gt
+            </pre>
+
+            <h5>
+                get_rule
+            </h5>
+            <pre>
+&lt;?php
+$data = array(
+    'api' => 'get_rule',
+    'token_id' => 'token_id',
+    'key' => 'key',
+);
+$query = http_build_query($data);
+$re = file_get_contents("http://bnow-host.com/app/enotify/api.php?".$query);
+var_dump(json_decode($re));
+?&gt
+            </pre>
+            <h5>
+                添错了rule怎么办? del_rule
+            </h5>
+            <pre>
+&lt;?php
+$data = array(
+    'api' => 'del_rule',
+    'key' => '/2000/pv',
+    'token_id' => 'token_id',
+);
+$query = http_build_query($data);
+$re = file_get_contents("http://bnow-host.com/app/enotify/api.php?".$query);
+var_dump(json_decode($re));
+?&gt
+            </pre>
+            <h5>
+                fetch rrd
+            </h5>
+            <pre>
+&lt;?php
+$data = array(
+    'api' => 'fetch_rrd',
+    'key' => '/2000/pv',
+    'key' => 'key',
+    'starttime'=> strtotime("-30 min"),
+    'endtime' => time(),
+    'interval' => 100
+);
+$query = http_build_query($data);
+$re = file_get_contents("http://bnow-host.com/app/enotify/api.php?".$query);
+var_dump(json_decode($re));
+            </pre>
+
+
+            <p class="alert alert-info">
+            enotify就是针对每个rule不停的循环并进行筛选, 当符合条件时自动通知的引擎
+            </p>
+        </div>
+    </div>
+</div>
+</div>

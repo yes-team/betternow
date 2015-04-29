@@ -1,0 +1,6 @@
+.*
+!.gitignore
+plugin/*
+plugin_src/ebin/*
+plugin_src/deps/*
+plugin_src/ebin/*

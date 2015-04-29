@@ -1,0 +1,54 @@
+<div class="row">
+<{include file='notify/menu.html'}>
+
+<div class="span10" >
+<br>
+<{if $alert}>
+<div class="alert">
+    <p>操作成功</p>
+</div>
+<{/if}>
+<table class="table">
+    <thead>
+        <tr>
+            <th width="100px">token_id</th>
+            <th width="200px">token</th>
+            <th width="">callback</th>
+            <th width="150px"></th>
+        </tr>
+    </thead>
+    <tbody>
+        <{foreach $tokens as $item}>
+        <tr>
+            <td>
+                <{$item.id}>
+            </td>
+            <td>
+                <{$item.token}>
+            </td>
+            <td>
+                <{foreach $item.callback as $key => $val}>
+                <{$val[0]}>  : <{$val[1]}>
+                <{/foreach}>
+            </td>
+            <td>
+                <button type="button" class="btn" onclick="location.href='/notify.php?action=token&token_id=<{$item.id}>';">Edit Token</button>
+                <button type="button" class="close" onclick="location.href='/notify.php?action=del_token&token_id=<{$item.id}>'">x</button>
+            </td>
+        </tr>
+        <{/foreach}>
+    </tbody>
+</table>
+
+<ul class="pager">
+    <{if $smarty.get.pos>=10}>
+    <li><a href="?<{$querys}>&pos=<{$smarty.get.pos-10}>">上一页</a></li>
+    <{/if}>
+    <{if count($list)==10}>
+    <li><a href="?<{$querys}>&pos=<{$smarty.get.pos+10}>">下一页</a></li>
+    <{/if}>
+</ul>
+
+<a href="/notify.php?action=token">添加token</a>
+
+</div>

@@ -1,0 +1,46 @@
+<h3><{$app.name}></h3>
+<p><{$app.desc}></p>
+<dl>
+    <{if $app.info}>
+    <dt>基本信息</dt>
+    <{foreach $app.info as $k=>$v}>
+    <dd><{$k}>: <{$v}></dd>
+    <{/foreach}>
+    <{/if}>
+
+
+    <{if $app.filter}>
+    <dt>过滤条件</dt>
+    <dd>
+    <{foreach $app.filter as $v}>
+    <{$v.name}><{if not $v@last}>, <{/if}>
+    <{/foreach}>
+    </dd>
+    <{/if}>
+
+    <{if $app.action}>
+    <dt>动作</dt>
+    <dd>
+    <{foreach $app.action as $v}>
+    <{$v.name}><{if not $v@last}>, <{/if}>
+    <{/foreach}>
+    </dd>
+    <{/if}>
+
+    <{if $app.menu}>
+    <dt>菜单项</dt>
+    <dd>
+    <{foreach $app.menu as $v}>
+    <a href="#/app/<{$app.app}>/<{$v.link}>"><{$v.text}></a><{if not $v@last}>, <{/if}>
+    <{/foreach}>
+    </dd>
+    <{/if}>
+
+    <{if $app.plugin}>
+    <dt>插件</dt>
+    <{foreach $app.plugin as $v}>
+    <dd><{$v.module}></dd>
+    <{/foreach}>
+    <{/if}>
+
+</dl>

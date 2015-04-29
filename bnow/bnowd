@@ -1,0 +1,8 @@
+#!/bin/sh
+
+prefix=/usr/local/
+bnow_prefix=${prefix}
+libexecdir=${exec_prefix}/libexec
+
+
+exec /usr/local//bnow/bin/bnow $@

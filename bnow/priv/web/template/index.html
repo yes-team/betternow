@@ -1,0 +1,17 @@
+<div class="row">    
+
+
+<{foreach $__APP__ as $key=>$item}>    <{if ($item.status eq "running") or ($item.status eq "running_outdated")}>    
+
+<{if $smarty.session.user.is_admin || $key|in_array:$smarty.session.user.acl  }>
+
+<{counter assign="appcount" print=false}>    <div class="span3">        <h3>
+
+<{if $item.menu}>
+<a href="/app/<{$key}>/<{$item.menu[0].link}>"><{$item.name}></a>
+<{else}>
+<{$item.name}>
+<{/if}>
+</h3>        <p><{$item.info.desc}></p>    </div>    <{/if}><{if $appcount is div by 4}></div><div class="row">
+<{/if}>
+<{/if}><{/foreach}></div><{if $appcount < 1}><h2 class="alert">当前系统尚未安装任何应用.</h2><{/if}>

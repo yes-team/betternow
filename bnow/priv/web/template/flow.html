@@ -1,0 +1,28 @@
+<section id="content"></section>
+<input id="message" type="text"/>
+
+<script language="javascript" type="text/javascript">
+$(function(){
+    var ws = $.websocket("ws://localhost:8888/flow", {
+        events: {
+            info: function(e) { 
+                $('#info').append(e.data + '<br>') 
+            },
+            error: function(e) { 
+                $('#info').append(e.data + '<br>') 
+            },
+            data: function(e){
+                console.info(e.data);
+                $('#content').append(e.data.host + '<br>') 
+            }
+        }
+    });
+
+    $('#message').change(function(){
+        ws.send('join', this.value);
+        this.value = '';
+    });
+    prettyPrint();
+});
+</script>
+

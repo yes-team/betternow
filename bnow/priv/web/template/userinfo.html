@@ -1,0 +1,100 @@
+<form class="raw" method="post">
+    <div class="span5 form-horizontal">
+        <div class="control-group">
+            <label class="control-label" for="inputUname">用户名</label>
+            <div class="controls">
+                <{if $action eq "profile"}>
+                <h4 style="margin:5px 0;line-height:20px;padding:0"><{$user.name}></h4>
+                <{elseif $smarty.get.action eq "edit"}>
+                <h4 style="margin:5px 0;line-height:20px;padding:0"><{$user.name}></h4>
+                <{else}>
+                <input class="span3" name="uname" type="text" id="inputUname" placeholder="字母数字">
+                <{/if}>
+            </div>
+        </div>
+        <{if $action neq 'profile'}>
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox">
+                    <input name="enabled" value="true" 
+                    <{if ($smarty.get.action eq "new") or $user.enabled}>
+                    checked="checked" 
+                    <{/if}>
+                    type="checkbox">账号已启用 
+                </label>
+            </div>
+        </div>
+        <{/if}>
+        <div class="control-group">
+            <label class="control-label" for="inputPassword">
+                <{if $action eq 'profile' or $smarty.get.action eq "edit"}>
+                修改密码
+                <{else}>
+                密码
+                <{/if}>
+            </label>
+            <div class="controls">
+                <div style="margin-bottom:10px">
+                    <input class="span3" name="password" type="password" id="inputPassword" placeholder="输入密码">
+                </div>
+                <input class="span3" name="password_re" type="password" placeholder="再输入一次">
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox">
+                    <input name="is_admin" value="true"
+                    <{if $user.is_admin}>
+                    checked="checked"
+                    <{/if}>
+                    type="checkbox" <{if $action eq 'profile'}>disabled<{/if}>>账号为管理员 
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="span5 offset1">
+        <label><{if $action neq 'profile'}>勾选<{/if}>可访问的应用:</label>
+        <div class="controls">
+
+            <{if $action eq 'profile'}>
+                <{if $user.acl}>
+            <{foreach $apps as $app}>
+            <div>
+                <{$app.name}> (<{$app.app}>)
+            </div>
+            <{/foreach}>
+                <{else}>
+                    无
+                <{/if}>
+            <{else}>
+            <{foreach $apps as $app}>
+            <label class="checkbox">
+                <input type="checkbox" name="acl[]"
+                <{if in_array($app.app, (array)$user.acl)}>
+                checked="checked"
+                <{/if}>
+                value="<{$app.app}>" /> <{$app.name}> (<{$app.app}>)
+            </label>
+            <{/foreach}>
+            <{/if}>
+        </div>
+    </div>
+
+    <div style="clear:both;margin:20px 0" class="form-horizontal">
+        <div class="control-group">
+            <div class="controls">
+                <input type="hidden" name="save" value="true" />
+                <{if $action eq 'profile'}>
+                <input type='hidden' name='username' value='<{$user.name}>'/>
+                <button type="submit" class="btn btn-primary">修改密码</button>
+                <{elseif $smarty.get.action eq "edit"}>
+                <button type="submit" class="btn btn-primary">保存修改</button>
+                <a href="?action=delete&user=<{$smarty.get.user}>" class="btn btn-danger offset1">删除<{$smarty.get.user}></a>
+                <{else}>
+                <button type="submit" class="btn btn-primary">创建用户</button>
+                <{/if}>
+            </div>
+        </div>
+    </div>
+
+</form>

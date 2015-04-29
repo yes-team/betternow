@@ -1,0 +1,419 @@
+<link href="/app/sdk/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src="/app/sdk/static/google-code-prettify/prettify.js"></script>
+
+<style>
+    h2{margin-top: 40px}
+    h3{margin-top: 20px}
+</style>
+
+
+
+<div class="span8">
+
+<p>
+Betternow是一个实时数据分析框架, 可以用其开发各种面向数据流的统计,
+分析,汇总等应用.
+</p>
+
+<p>
+可以用在电子商务系统的过程统计, 会员购买记录的汇总和快速处理, 
+网站可用性监测. 面向实时处理逻辑的AB测试引擎等场景.
+</p>
+
+
+<h3>结构与原理</h3>
+<div class="row">
+
+    
+    <div class="span4">
+    <p>
+    数据由各个节点的agent进行采集, 采集的数据需要编码成Key-value的形式, 然后
+    发送给betternow中心, betternow采用安装的APP策略对数据进行处理.
+    </p>
+
+    <p>
+    处理的动作有三种:
+    <ol>
+        <li>直接转发给websocket的channel</li>
+        <li>更新rrd(统计图表)</li>
+        <li>转发给plugin(使用erlang编写), 由plugin对数据进行再处理或再分发</li>
+    </ol>
+    </p>
+
+    <p class="alert alert-info">
+    Betternow就是将数据进行汇总, 并由<strong>应用组件(App)</strong>对数据处理进行定义分析的引擎.
+    </p>
+    </div>
+
+
+    <div class="span4">
+        <img src="/app/sdk/static/overview.gif" alt="" width="422" height="205" />
+    </div>
+</div>
+
+<div>
+    <h3>应用组件</h3>
+    <p>
+    Betternow的APP的目录结构和所含内容如下表所示:
+    <table class="table table-bordered table-striped">
+        <colgroup>
+          <col class="span1">
+          <col class="span7">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>路径</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <code>/app.xml</code>
+            </td>
+            <td>
+                包含应用的名称, 作者. 过滤条件, 触发器, 动作. 界面菜单等等. 
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>/plugin</code>
+            </td>
+            <td>
+                数据处理插件, erlang module. 需要设置在<code>app.xml</code>中调用.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>/web</code>
+            </td>
+            <td>
+                前端的网站页面, 可在<code>app.xml</code>里设置在网站菜单里
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </p>
+
+    <p>
+    仅仅这些还不够完成一个业务, 还需要采集数据的<code>agent</code>, 下面介绍
+    agent部分
+    </p>
+</div>
+
+<div>
+    <h3>数据收集</h3>
+    
+    <p>agent可以用任何语言创建, 只要能按照以下格式发回定义好的数据包.<br />
+    <img src="/app/sdk/static/packet-01.gif" alt=""  />
+    </p>
+
+    <p>数据使用<a href="http://www.zeromq.org">ZeroMQ</a>进行传输, 
+    本系统的数据包监听地址: <code><{$config.zmq_listen}></code>
+    </p>
+    <p>
+    <p><img src="/app/sdk/static/a.gif" width="20" height="20" />
+        每个数据包, 都要有个<code>class</code>名称. 
+    这样你的<code>app</code>才能辨别哪些包是需要处理的. <br />
+    包头的第一个字节用来描述<code>class</code>字符串的长度, 因此<code>class</code>
+    的长度上限是255.
+    </p>
+
+    <p><img src="/app/sdk/static/b.gif" width="20" height="20" />
+    标示本数据包的数据格式选项. 数字与含义如下:
+        <table class="table table-bordered table-striped">
+        <colgroup>
+          <col class="span1">
+          <col class="span7">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>字符</th>
+            <th>含义</th>
+          </tr>
+        </thead>
+<!--        -define(TYPE_CODE_KV_1, 35).-->
+<!---define(TYPE_CODE_KV_2, 36).-->
+<!---define(TYPE_CODE_KV_4, 37).-->
+<!---define(TYPE_CODE_BIN, 33).-->
+        <tbody>
+          <tr>
+              <td><code>33</code></td>
+            <td>
+                直接传输,服务器端将不自动进行解析. <i class="icon icon-exclamation-sign"></i>此格式只能由plugin处理
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>35</code>
+            </td>
+            <td>
+                单字节描述value长度, 适用于本数据包所有value长度小于256.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>37</code>
+            </td>
+            <td>
+                2字节描述value长度, 适用于本数据包所有value长度小于65536.
+            </td>
+          </tr>
+            <tr>
+            <td>
+              <code>38</code>
+            </td>
+            <td>
+                4字节描述value长度, 适用于本数据包所有value长度小于4,294,967,296.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </p>
+
+    <p><img src="/app/sdk/static/d.gif" width="20" height="20" />
+    key用<code>长度字符+内容</code>进行封装, key是约定必须小于255, 只要一个
+    字节来描述它的长度
+    </p>
+
+    <p><img src="/app/sdk/static/e.gif" width="20" height="20" />
+    value也是用<code>长度字符+内容</code>进行封装, 
+    如<img src="/app/sdk/static/b.gif" width="20" height="20" />所示, 我们提供3种长度描述选择, 
+    </p>
+
+    <p>
+    除自定义的数据二进制外, 所有的数据都要定义成Key-value格式, 
+    例如http协议数据嗅探器的返回:
+    <table class="table table-condensed">
+    <thead>
+        <tr><th>Key</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>method</td><td>GET</td></tr>
+        <tr><td>path</td><td>/</td></tr>
+        <tr><td>code</td><td>200</td></tr>
+        <tr><td>host</td><td>www.baidu.com</td></tr>
+        <tr><td>node</td><td>嫦娥一号</td></tr>
+        <tr><td>server</td><td>119.75.218.77:80</td></tr>
+        <tr><td>client</td><td>192.168.51.60</td></tr>
+        <tr><td>up-bytes</td><td>867</td></tr>
+        <tr><td>down-bytes</td><td>4209</td></tr>
+        <tr><td>proc-time</td><td>0.000001</td></tr>
+        <tr><td>net-time</td><td>0.000063</td></tr>
+        <tr><td>request-referer</td><td>http://baidu.com/</td></tr>
+        <tr><td>request-user-agent</td><td>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) </td></tr>
+        <tr><td>response-server</td><td>BWS/1.0</td></tr>
+    </tbody>
+    </table>
+
+<p class="alert alert-info">
+注意: 所有数字请采用Big endian
+</p>
+
+你可以用bnow-reporter小工具, 快速在shell里生成.
+<pre>
+bnow-reporter init class-name
+bnow-reporter add key1 value1
+bnow-reporter add key2 value2
+bnow-reporter add key3 value3
+bnow-reporter add key4 value4
+bnow-reporter send
+</pre>
+
+该命令使用临时环境变量$BNOW_REPORTER_DATA作为上下文传递, <br />
+所以不能用在无法传递环境变量的场合
+<div>
+
+<a id="app.xml"></a>
+<div>
+    <h3>app.xml和数据的分拣</h3>
+<pre class="prettyprint"><{$appxml|escape}></pre>
+
+    <ul>
+        <li><code>name</code>, author, copyright基本的属性定义, 其中name为必填项</li>
+        <li><code>filter</code>定义过滤条件, 每个filter需要有app内唯一的id, class指定
+        filter关注的数据类型.
+        <ul>
+            <li><code>assert</code>, 指定class的数据, 必须每个key和value都
+            通过assert的检测才能算通过
+        </ul>
+        <li><code>action</code>定义动作, 也必须有app内唯一id, type有三种可选
+            <ul>
+                <li><code>websocket</code>, item属性定义了channel的名称, 数据包会发到该channel
+                <li><code>update</code>
+                    <ul>
+                        <li><code>item</code>定义了rrd的项目名称, 
+                        <li><code>value</code>定义了更新的数据值,支持四则运算公式
+                        <li><code>function</code>可选四种算法
+                            <ol>
+                                <li><code>sum</code>, 求和
+                                <li><code>avg</code>, 取平均数
+                                <li><code>min</code>, 取最小值
+                                <li><code>max</code>, 取最大值
+                            </ol>
+                    </ul>
+            </ul>
+        <li><code>trigger</code>, 每个trigger都是将一个filter和一个action进行绑定生效.
+        <li><code>plugin</code>, 系统将在加载app时,自动启动该模块
+        <li><code>menu</code>显示在管理网站上的菜单, link指定的是web下的文件名
+    </ul>
+</div>
+
+
+<div>
+    <h3>php网站页面的编写</h3>
+<pre class="prettyprint">
+&lt;?php
+//加载系统类库
+require($_SERVER['BNOW_BASEDIR'].'/lib/include.php');
+
+//... 业务代码
+
+//构建smarty页面参数
+$vars = array(
+        'data'=>$data,
+        'var1'=>$var1,
+        'var2'=>$var2,
+    );
+
+$page_title = '开发手册';
+
+//输出结果
+bnow_render::page('doc.html', $vars , $page_title);
+
+?&gt;
+</pre>
+
+<p>
+内建的php类库
+<ul>
+    <li><code>bnow</code> - betternow通信的api模块.
+    <li><code>bnow_render</code> - 负责页面渲染的模块, 封装了smarty 3.1. 方法如下:
+    <ul>
+        <li><code>page(string $tmpl, array $vars=array(), string $page_title='')</code><br />
+        用$tmpl模板渲染一个页面
+        <li><code>fetch(string $tmpl, array $vars=array())</code><br />
+        用$tmpl模板解析一段html
+        <li><code>display(string $tmpl, array $vars=array())</code><br />
+        用$tmpl模板展示一段html
+    </ul>
+</ul>
+</p>
+</div>
+
+
+<div>
+    <h3>erlang plugin</h3>
+<pre class="prettyprint">
+-module(http_scope).
+-export([init/1, handle_event/4, terminate/2, code_change/3]).
+-behaviour(bnow_plugin).
+-record(state, {}).
+
+init(_Opts)-&gt;
+    {ok, #state{}}.
+
+handle_event(_Class, _Data, _Action, _State)-&gt;
+    io:format("~p ~p ~p ~p\n", [_Class, _Data, _Action, _State]),
+    {norelay, _State}.
+    
+terminate(_Reason, State) -&gt;
+    ok.
+
+code_change(_Vsn, State, _Extra) -&gt;
+    {ok, State}.
+</pre>
+<p>定义的方法可以被<code>bnow::exec(string $expr)</code>调用.</p>
+</div>
+
+<!--<div>-->
+<!--    <h2>websocket</h2>-->
+<!--    <a href="?example=flow">flow</a>-->
+<!--</div>-->
+
+<h3>相关技术</h3>
+<blockquote class="quote">
+    <h4><a href="http://www.zeromq.org">The Intelligent Transport Layer -
+            zeromq</a></h4>
+    <p>ØMQ \zeromq\:   Ø   The socket library that acts as a concurrency framework.   Ø   Faster than TCP, ...</p>
+    <cite>http://www.zeromq.org</cite>
+</blockquote>
+
+<blockquote class="quote">
+    <h4><a href="http://erlang.org">Erlang Programming Language</a></h4>
+    <p>What is Erlang? Erlang is a programming language used to build massively scalable soft real-time sys...</p>
+    <cite>http://erlang.org</cite>
+</blockquote>
+
+
+<blockquote class="quote">
+    <h4><a href="http://php.net">PHP: Hypertext Preprocessor</a></h4>
+    <p>Upcoming Events [add] August Conferences 17 . PHPMS Conf 2012 17 . PHP Congress México 2012 18 . 2do...</p>
+    <cite>http://php.net</cite>
+</blockquote>
+
+<h3>随带第三方库</h3>
+
+<blockquote class="quote">
+    <h4><a href="http://twitter.github.com/bootstrap/index.html">Bootstrap, from Twitter</a></h4>
+    版权: <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License v2.0</a>
+    <p>Simple and flexible HTML, CSS, and Javascript for popular user interface components and interactions.</p>
+    <cite>http://twitter.github.com/bootstrap/index.html</cite>
+</blockquote>
+
+<blockquote class="quote">
+    <h4><a href="http://smarty.net/">PHP Template Engine | Smarty</a></h4>
+    版权: <a href="http://www.gnu.org/licenses/lgpl.html">LGPL (Lesser GPL)</a>
+    <p>David from Hostelz says: Hostelz.com is the largest hostels guide on the web, featuring over 43,000 ...</p>
+    <cite>http://smarty.net/</cite>
+</blockquote>
+
+
+<blockquote class="quote">
+    <h4><a href="http://jquery.com/">jQuery: The Write Less, Do More, JavaScript
+            Library</a></h4>
+    版权: <a href="http://github.com/jquery/jquery/blob/master/MIT-LICENSE.txt">MIT License</a>
+    <p>jQuery is a new kind of JavaScript Library. jQuery is a fast and concise JavaScript Library that sim...</p>
+    <cite>http://jquery.com/</cite>
+</blockquote>
+    
+
+<!--/data/list.csv?d=url/rm.api.weibo.com&d=url/img.macx.cn&d=url/www.tgbus.com&d=url/hm.baidu.com&d=url/ww2.sinaimg.cn&d=url/ww1.sinaimg.cn-->
+<blockquote class="quote">
+    <h4><a href="http://dygraphs.com/">dygraphs JavaScript Visualization
+            Library</a></h4>
+    版权: <a href="https://github.com/danvk/dygraphs/blob/master/LICENSE.txt">MIT License</a>
+    <p>Display: Nominal Real Annotations Other Options In addition to the options mentioned above ( showRol...</p>
+    <cite>http://dygraphs.com/</cite>
+
+<div id="graphdiv4" style="width:480px; height:320px;"></div>
+<script type="text/javascript">
+$(function(){
+  g4 = new Dygraph(
+    document.getElementById("graphdiv4"), "/app/sdk/static/dygraph-demo.csv", {
+      rollPeriod: 7,
+      //showRoller: true,
+      errorBars: true,
+      //valueRange: [500,125]
+      //xValueFormatter: Dygraph.dateString_,
+      //xValueParser: function(x) { return 1000*parseInt(x); },
+      //xTicker: Dygraph.dateTicker
+    }
+  );
+});
+</script>
+</blockquote>
+
+<blockquote class="quote">
+    <h4><a href="http://omnipotent.net/jquery.sparkline/"><h4>jQuery
+                Sparklines</h4></a></h4>
+    版权: <a href="http://www.opensource.org/licenses/bsd-license.php">New BSD License</a>
+    <p>News 29 April 2012 - Version 2.0 Released This release represents a significant code update. It feat...</p>
+    <cite>http://omnipotent.net/jquery.sparkline/</cite>
+</blockquote>
+</div>
+
+
+<script>
+prettyPrint();
+</script>
