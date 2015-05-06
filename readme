@@ -1,0 +1,32 @@
+Betternow 
+
+erlang r16b 版本 
+
+启动方式 make start 
+
+初始化并生成admin账号
+
+bnow_setup:init()
+
+会现实admin账号密码
+
+配置文件 bnow/rel/files/app.config
+
+distinct_server 使用redis 指定所起ip的redis
+
+api_host 指向rrd(doraemon)
+
+消息进出基于rabbitmq 
+request_mqs 中所选内容为实际收取消息的mq
+
+rrd_queue 发送到rrd的消息
+
+app安装
+
+apps为app目录 有插件的app 需要在app目录下make 比如sdk
+bnow 命令行下 
+bnow_app:install(app_name) 安装app
+bnow_app:update(app_name) 更新app
+bnow_app:uninstall(app_name) 卸载app
+
+
